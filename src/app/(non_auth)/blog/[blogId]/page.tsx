@@ -140,8 +140,8 @@ export default function EditBlog() {
     else setIsVideo(false);
     if (tool === "url") setIsUrl(true);
     else setIsUrl(false);
-    if (tool === "code") setIsCode(true);
-    else setIsCode(false);
+    // if (tool === "code") setIsCode(true);
+    // else setIsCode(false);
     if (tool === "ai") setIsAI(true);
     else setIsAI(false);
   };
