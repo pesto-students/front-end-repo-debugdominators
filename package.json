@@ -1,0 +1,81 @@
+{
+  "name": "academicsphere",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint .",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,css,scss,json}\"",
+    "prepare": "husky install"
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint-config-prettier"
+    ]
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.3.0",
+    "@ant-design/nextjs-registry": "^1.0.0",
+    "@auth/mongodb-adapter": "^2.4.0",
+    "@aws-sdk/client-s3": "^3.521.0",
+    "@reduxjs/toolkit": "^2.0.1",
+    "antd": "^5.14.0",
+    "axios": "^1.6.5",
+    "bcrypt": "^5.1.1",
+    "crypto": "^1.0.1",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.2.2",
+    "next": "14.0.4",
+    "next-auth": "^5.0.0-beta.13",
+    "node-cache": "^5.1.2",
+    "node-mailer": "^0.1.1",
+    "nodemailer": "^6.9.8",
+    "openai": "^4.28.0",
+    "prettier": "^3.1.1",
+    "pusher": "^5.2.0",
+    "pusher-js": "^8.4.0-rc2",
+    "razorpay": "^2.9.2",
+    "react": "^18",
+    "react-calendly": "^4.3.0",
+    "react-dom": "^18",
+    "react-draggable": "^4.4.6",
+    "react-google-autocomplete": "^2.7.3",
+    "react-places-autocomplete": "^7.3.0",
+    "react-quill": "^2.0.0",
+    "react-redux": "^9.1.0",
+    "unsplash-js": "^7.0.19"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/node": "^20",
+    "@types/nodemailer": "^6.4.14",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^6.17.0",
+    "@typescript-eslint/parser": "^6.17.0",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "14.0.4",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.2",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^15.2.0",
+    "postcss": "^8",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint"
+    ],
+    "*.{ts,tsx,js,jsx,css,scss}": [
+      "prettier --write"
+    ]
+  }
+}
