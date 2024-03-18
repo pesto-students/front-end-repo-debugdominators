@@ -8,7 +8,7 @@ const s3 = new S3Client({
     accessKeyId: process.env.ACCESS_KY!,
     secretAccessKey: process.env.SECRET_KY!,
   },
-  region: process.env.AWS_REGION!,
+  region: process.env.REGION!,
 });
 
 const { SVG, PNG, GIF, JPG, JPEG } = fileType;
