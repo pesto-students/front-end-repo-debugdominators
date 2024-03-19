@@ -5,10 +5,10 @@ import { fileType } from "@/constants/random";
 
 const s3 = new S3Client({
   credentials: {
-    accessKeyId: process.env.ACCESS_KY!,
-    secretAccessKey: process.env.SECRET_KY!,
+    accessKeyId: process.env.AWS_ACCESS_KEY!,
+    secretAccessKey: process.env.AWS_SECRET_KEY!,
   },
-  region: process.env.REGION!,
+  AWS_REGION: process.env.AWS_REGION!,
 });
 
 const { SVG, PNG, GIF, JPG, JPEG } = fileType;
