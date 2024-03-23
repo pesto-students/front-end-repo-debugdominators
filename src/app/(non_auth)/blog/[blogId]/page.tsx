@@ -98,7 +98,9 @@ export default function Dashboard() {
         author: session?.user?.id,
       });
       if (response?.data?.data) {
-        setComments((prev: CommentProps[]) => [...prev, response?.data?.data]);
+        setComments((prev: CommentProps[]) => {
+          return [...prev, ...(response?.data?.data?.comments || [])];
+        });
         setComment("");
         setAlert({
           message: "Comment Created",
@@ -151,7 +153,7 @@ export default function Dashboard() {
           const lastCommentId =
             responseCommnets?.[responseCommnets?.length - 1]?._id;
           if (lastPrevDataId === lastCommentId) return responseCommnets;
-          return [...prevData, response?.data?.data];
+          return [...prevData, ...responseCommnets];
         });
         setRemainComments(response?.data?.data?.remain_count);
         setCommentLoading(false);
