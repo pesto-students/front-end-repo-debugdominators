@@ -69,6 +69,14 @@ const Navbar = ({ session }: { session: string | undefined }) => {
                   Home
                 </Link>
               </Menu.Item>
+              <Menu.Item key="write">
+                <Link
+                  href="/blog"
+                  style={collapsed ? itemStylingWhite : itemStylingBlack}
+                >
+                  Write
+                </Link>
+              </Menu.Item>
               <Menu.Item key="profile">
                 <Link
                   href="/profile"
