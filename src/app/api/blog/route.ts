@@ -44,3 +44,58 @@ export async function POST(req: Request) {
     return commonCatchError(JSON.stringify(error));
   }
 }
+
+export async function PUT(req: Request) {
+  const body = await req.json();
+  const { userId, blogId, seen, like, save } = body;
+  if (!userId || !blogId) {
+    const payload = {
+      msg: "Ids not passed",
+      data: body,
+      status: client.BAD_REQ,
+      success: false,
+    };
+    return httpResponse(payload);
+  }
+  try {
+    await dbConnect();
+    let response = null;
+    if (seen) {
+      response = await BlogModel.findOneAndUpdate(
+        {
+          _id: blogId,
+          author: { $ne: userId },
+        },
+        { $inc: { seen: 1 } },
+        { new: true },
+      );
+    } else if (like) {
+      response = await BlogModel.findOneAndUpdate(
+        {
+          _id: blogId,
+          likedUsers: { $nin: [userId] },
+        },
+        { $inc: { likes: 1 }, $addToSet: { likedUsers: userId } },
+        { new: true },
+      );
+    } else if (save) {
+      response = await BlogModel.findOneAndUpdate(
+        {
+          _id: blogId,
+          savedUsers: { $nin: [userId] },
+        },
+        { $addToSet: { savedUsers: userId } },
+        { new: true },
+      );
+    }
+    const payload = {
+      msg: "Existing Blog updated successfully",
+      data: response,
+      status: success.CREATED,
+      success: false,
+    };
+    return httpResponse(payload);
+  } catch (error) {
+    return commonCatchError(JSON.stringify(error));
+  }
+}

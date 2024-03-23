@@ -21,7 +21,7 @@ export interface registerInputProps extends InputPropsParent {
 
 export interface InputPropsChild {
   placeholder: string;
-  value: string;
+  value?: string;
   setValue: (value: string) => void;
   type: string;
   name: string;
@@ -37,5 +37,6 @@ export interface AntSelectItem {
     label: string;
   }[];
   placeholder: string;
+  value?: string;
   setTopic: (value: string) => void;
 }

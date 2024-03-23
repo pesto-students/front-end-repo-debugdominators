@@ -16,11 +16,13 @@ export interface SelectStateProps {
 }
 
 export interface TextAreaField {
+  value?: string;
   setHeading: (value: string) => void;
   placeholder: string;
 }
 
 export interface UplaodField {
+  value?: string;
   type: string[];
   maxCount: number;
   setImage: (value: string) => void;
@@ -37,21 +39,23 @@ export interface AntButtonProps {
 }
 
 export interface AntAlertProps {
-  message: string;
-  description: string;
-  type: "error" | "success" | "info" | "warning";
-  isShowIcon: boolean;
-  handleClick: () => void;
+  message?: string;
+  description?: string;
+  type?: "error" | "success" | "info" | "warning";
+  isShowIcon?: boolean;
+  handleClick?: () => void;
 }
 
 export interface AntSearchInputProps {
+  value?: string;
   placeholder: string;
   buttonName: string;
   size: "large" | "middle" | "small";
   isLoading: boolean;
   allowClear: boolean;
+  isButton?: boolean;
   handleChange: (value: string) => void;
-  handleClick: () => void;
+  handleClick?: () => void;
   count?: boolean;
 }
 
@@ -70,17 +74,28 @@ export interface AntSpinProps {
   size?: "small" | "default" | "large";
 }
 
-interface author {
-  _id: ObjectId;
+export interface Author {
+  _id: ObjectId | string;
   name: string;
   email: string;
   image?: string;
 }
 
+export interface BlogContentProps {
+  _id?: ObjectId;
+  html?: HTMLElement | string;
+  image?: string;
+  url?: string;
+  code?: unknown;
+  video?: HTMLIFrameElement | string;
+}
+
 export interface BlogProps {
-  author: author;
+  author: Author;
   bannerImg: string;
-  content: string;
+  content: BlogContentProps[];
+  likedUsers?: (ObjectId | string)[];
+  savedUsers?: (ObjectId | string)[];
   createdAt: Date | string;
   heading: string;
   isPublished: boolean;
@@ -91,12 +106,43 @@ export interface BlogProps {
   _id: ObjectId | string;
 }
 
-export interface BlogContentProps {
-  html?: HTMLElement | string;
-  image?: string;
-  url?: string;
-  code?: unknown;
-  video?: HTMLIFrameElement | string;
+export interface CommentProps {
+  _id: ObjectId;
+  author: Author;
+  blog: ObjectId;
+  content: string;
+  date: Date;
+}
+
+export interface CommentsProps {
+  comments?: CommentProps[];
+  commentLoading?: boolean;
+  remainComments?: number;
+  userId?: ObjectId | string;
+  handleDeleteComment?: (commentId: ObjectId) => void;
+  loadMoreComments?: () => void;
+}
+
+export interface BlogDetailPorps extends CommentsProps {
+  isCommentShow?: boolean;
+  loading: boolean;
+  editMeta?: boolean;
+  deleteConetent?: boolean;
+  blog: BlogProps;
+  isAuthor?: boolean;
+  comment?: string;
+  alert?: AntAlertProps;
+  isAlert?: boolean;
+  isEditContent?: boolean;
+  likingBlog?: () => void;
+  savingBlog?: () => void;
+  handleRedirect?: () => void;
+  deletContent?: (id: ObjectId) => void;
+  editContent?: (content: BlogContentProps) => void;
+  handleShowComments?: () => void;
+  setComment?: Dispatch<SetStateAction<string>>;
+  handleSubmitComment?: () => void;
+  pathToEdit?: () => void;
 }
 
 export interface DraggableModalProps {

@@ -5,6 +5,7 @@ const { Content } = Layout;
 import axios from "axios";
 import { BlogProps } from "@/utils/types/state";
 import { findHowmanyDaysBefore } from "@/utils/helpers/methods";
+import Link from "next/link";
 
 const GeneralBlogs = () => {
   const [blogs, setBlogs] = useState<BlogProps[]>([]);
@@ -76,17 +77,27 @@ const GeneralBlogs = () => {
 
             <Typography.Text>{blog?.topic}</Typography.Text>
             <Typography.Title className="text-2xl">
-              {blog?.heading}
+              <Link
+                style={{ textDecoration: "none", color: "inherit" }}
+                href={`${process.env.NEXT_PUBLIC_BASE_PATH}/blog/${blog?._id}`}
+              >
+                {blog?.heading}
+              </Link>
             </Typography.Title>
             <Typography.Text className="font-semibold">
-              <div
-                dangerouslySetInnerHTML={{
-                  __html:
-                    blog?.content.length > 500
-                      ? `${blog?.content.slice(0, 500)}...`
-                      : `${blog?.content}...`,
-                }}
-              />
+              <Link
+                style={{ textDecoration: "none", color: "inherit" }}
+                href={`${process.env.NEXT_PUBLIC_BASE_PATH}/blog/${blog?._id}`}
+              >
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      blog?.content.length > 500
+                        ? `${blog?.content.slice(0, 500)}...`
+                        : `${blog?.content}...`,
+                  }}
+                />
+              </Link>
             </Typography.Text>
             <Content className="  d-flex   flex items-center mt-5 mb-10 ">
               <Image
@@ -95,10 +106,14 @@ const GeneralBlogs = () => {
                 alt="profile-image"
               />
               <Typography.Text className="">
-                {blog?.author?.name}
+                <Link
+                  style={{ textDecoration: "none", color: "inherit" }}
+                  href={`${process.env.NEXT_PUBLIC_BASE_PATH}/profile/${blog?.author?._id}`}
+                >
+                  {blog?.author?.name}
+                </Link>
               </Typography.Text>
               <span className="text-slate-800 font-bold m-2">•</span>
-
               <Typography.Text className="">
                 {blog?.readingTime} minute read
               </Typography.Text>

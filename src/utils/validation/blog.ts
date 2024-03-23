@@ -20,7 +20,7 @@ export const blogSchema = Joi.object({
   createdAt: Joi.date(),
   updatedAt: Joi.date().default(() => new Date()),
   seen: Joi.number(),
-  readingTime: Joi.number(),
+  readingTime: Joi.number().default(5),
   likes: Joi.number(),
   unlikes: Joi.number(),
 });

@@ -13,6 +13,7 @@ export const s3bucket = {
   BUCKET_URL: "https://academic-spehere.s3.ap-south-1.amazonaws.com",
   NO_USER_IMG:
     "https://academic-spehere.s3.ap-south-1.amazonaws.com/static/No_image_available.svg.png",
+  LOGO: "https://academic-spehere.s3.ap-south-1.amazonaws.com/BlogMingle.png",
 };
 
 export const userSelect = {
@@ -26,12 +27,16 @@ export const userSelect = {
 };
 
 export const blogSelect = {
+  author: 1,
   bannerImg: 1,
   topic: 1,
   heading: 1,
   content: 1,
   readingTime: 1,
   updatedAt: 1,
+  likedUsers: 1,
+  savedUsers: 1,
+  seen: 1,
 };
 
 export const payment = {

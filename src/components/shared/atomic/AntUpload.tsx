@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import Plus from "../../../../public/general/Plus.svg";
+// import Plus from "../../../../public/general/Plus.svg";
 import { message, Modal, Upload } from "antd";
 import type { GetProp, UploadFile, UploadProps } from "antd";
 import Image from "next/image";
 import { UplaodField } from "@/utils/types/state";
+import { PlusOutlined } from "@ant-design/icons";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
@@ -15,7 +16,12 @@ const getBase64 = (file: FileType): Promise<string> =>
     reader.onerror = (error) => reject(error);
   });
 
-const AntUpload: React.FC<UplaodField> = ({ type, maxCount, setImage }) => {
+const AntUpload: React.FC<UplaodField> = ({
+  type,
+  maxCount,
+  value,
+  setImage,
+}) => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
   const [previewTitle, setPreviewTitle] = useState("");
@@ -55,18 +61,19 @@ const AntUpload: React.FC<UplaodField> = ({ type, maxCount, setImage }) => {
     return setFileList([]);
   };
 
-  const uploadButton = (
-    <button
-      className="flex-col"
-      style={{ border: 0, background: "none" }}
-      type="button"
-    >
-      <div className="flex justify-center">
-        <Image width={15} src={Plus} alt="plus" />
-      </div>
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </button>
-  );
+  // const uploadButton = (
+  //   <button
+  //     className="flex-col"
+  //     style={{ border: 0, background: "none" }}
+  //     type="button"
+  //   >
+  //     <div className="flex justify-center">
+  //       <Image width={15} src={Plus} alt="plus" />
+  //     </div>
+  //     <div style={{ marginTop: 8 }}>Upload</div>
+  //   </button>
+  // );
+
   return (
     <>
       <Upload
@@ -77,7 +84,21 @@ const AntUpload: React.FC<UplaodField> = ({ type, maxCount, setImage }) => {
         onChange={handleChange}
         maxCount={maxCount}
       >
-        {fileList.length >= 8 ? null : uploadButton}
+        {/* {fileList.length >= 8 ? null : uploadButton} */}
+        {fileList.length === 0 && value ? (
+          <Image
+            style={{ borderRadius: "25px" }}
+            width={100}
+            height={100}
+            src={value}
+            alt="Preview"
+          />
+        ) : (
+          <div>
+            <PlusOutlined />
+            <div style={{ marginTop: 8 }}>Upload</div>
+          </div>
+        )}
       </Upload>
       <Modal
         open={previewOpen}

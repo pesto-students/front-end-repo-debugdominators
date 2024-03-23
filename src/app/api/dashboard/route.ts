@@ -39,7 +39,8 @@ export async function GET(request: NextRequest) {
       staffPick: false,
       "content.html": { $exists: true },
     });
-    const remain_count = total_count - (skip + per_page);
+    const remain_count =
+      total_count > skip + per_page ? total_count - (skip + per_page) : 0;
     const mongoResponse = await BlogModel.find({
       isPublished: true,
       staffPick: false,

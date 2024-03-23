@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
         author: endPath,
         isPublished: true,
       });
-      const remain_count = total_count - (skip + per_page);
+      const remain_count =
+        total_count > skip + per_page ? total_count - (skip + per_page) : 0;
 
       const blogsFromMongo = await BlogModel.find({
         author: endPath,
@@ -52,7 +53,10 @@ export async function GET(request: NextRequest) {
       );
       response = { blogs, remain_count, total_count };
     } else {
-      response = await BlogModel.findById(endPath);
+      response = await BlogModel.findById(endPath).populate({
+        path: "author",
+        select: "name email image",
+      });
     }
     return commonSuccessResponse(response);
   } catch (error) {
@@ -71,7 +75,8 @@ export async function PUT(request: NextRequest) {
   const { error } = updateBlogSchema.validate(body, {
     abortEarly: false,
   });
-  if (error || Object.keys(content).length > 1) {
+
+  if (error) {
     const payload = {
       msg: "Validation failed",
       data: { error: error?.message, content },
@@ -89,6 +94,17 @@ export async function PUT(request: NextRequest) {
   //       s3URL = body?.bannerImg;
   //     }
   //   }
+  if (content?.bannerImg) {
+    const isHttp = content?.bannerImg.slice(0, 4);
+    if (isHttp !== "http") {
+      const base64 = content?.bannerImg.split("/");
+      if (base64[0] === "data:image") {
+        content.bannerImg = await imageUpload(content?.bannerImg);
+      }
+    }
+  }
+  if (content?.heading?.trim()) content.heading = content?.heading?.trim();
+  if (content?.topic?.trim()) content.topic = content?.topic?.trim();
   if (content?.image) {
     const base64 = content?.image.split("/");
     if (base64[0] === "data:image") {
@@ -97,7 +113,9 @@ export async function PUT(request: NextRequest) {
   } else if (content?.video) {
     const video = content?.video?.split(" ");
     if (video !== "<iframe") {
-      content.video = `<iframe width="560" height="315" src=${content?.video} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+      content.video = `<iframe width="100%" height="315" src=${content?.video} title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`;
+    } else {
+      content.video = content.video.replace(/width="\d*"/, 'width="100%"');
     }
   } else if (content?.url) {
     const link = content?.url?.split(":");
@@ -128,13 +146,13 @@ export async function POST(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const path = pathname.split("/");
   const endPath = path[path?.length - 1]?.trim();
-  if (!endPath) throw new Error("No id is passed");
+  if (!endPath || !body?.author) throw new Error("No id is passed");
 
   try {
     await dbConnect();
     const response = await BlogModel.updateOne(
-      { _id: endPath },
-      { readingTime: body?.readingTime, isPublished: true },
+      { _id: endPath, author: body?.author },
+      { readingTime: body?.readingTime || 5, isPublished: true },
     );
     return commonSuccessResponse(response);
   } catch (error) {
@@ -149,16 +167,16 @@ export async function PATCH(request: NextRequest) {
   if (!endPath) throw new Error("No id is passed");
 
   const body = await request.json();
-  const { author, contentId, content } = body;
+  const { author, contentId } = body;
   try {
     await dbConnect();
     const response = await BlogModel.findOneAndUpdate(
       { _id: endPath, author },
-      { $set: { [`content.${contentId}`]: content } },
+      { $pull: { content: { _id: contentId } } },
       { new: true },
     );
     const payload = {
-      msg: "Data saved successfully",
+      msg: "Content Data delted successfully",
       data: response,
       status: success.CREATED,
       success: true,

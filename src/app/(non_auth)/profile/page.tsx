@@ -1,7 +1,7 @@
 "use client";
 import locationIcon from "../../../../public/general/Location.svg";
-import chatIcon from "../../../../public/general/Speech Bubble.svg";
-import edit from "../../../../public/general/Edit.svg";
+// import chatIcon from "../../../../public/general/Speech Bubble.svg";
+// import edit from "../../../../public/general/Edit.svg";
 import forward from "../../../../public/general/Forward.svg";
 import backward from "../../../../public/general/Backward.svg";
 import { Avatar, List, Tooltip } from "antd";
@@ -16,11 +16,14 @@ import DraggableModal from "@/components/shared/molecular/DraggableModal";
 import { AntAlertProps, BlogProps, UserUpdateProps } from "@/utils/types/state";
 import AntAlert from "@/components/shared/atomic/AntAlert";
 import ReactGoogleAutocomplete from "react-google-autocomplete";
-import { UserOutlined } from "@ant-design/icons";
+import { EditOutlined, UserOutlined, WechatOutlined } from "@ant-design/icons";
 import AntSpin from "@/components/shared/atomic/AntSpin";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 const { Content } = Layout;
 
 export default function Profile() {
+  const router = useRouter();
   const { data: session } = useSession();
   const [profileURL, setProfileURL] = useState("");
   const [alert, setAlert] = useState<AntAlertProps>({
@@ -31,6 +34,7 @@ export default function Profile() {
     handleClick: () => {},
   });
   const [isAlert, setIsAlert] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [followers, setFollowers] = useState<BasicUserInfo[]>([]);
   const [following, setFollowing] = useState<BasicUserInfo[]>([]);
@@ -41,11 +45,16 @@ export default function Profile() {
   const [bio, setBio] = useState("");
   const [remainCountLiked, setRemainCountLiked] = useState(3);
   const [remainCountSaved, setRemainCountSaved] = useState(3);
+  const [remainCountPublished, setRemainCountPublished] = useState(3);
+  const [remainCountDrafted, setRemainCountDrafted] = useState(3);
   const [likedBlogs, setLikedBlogs] = useState<BlogProps[]>([]);
   const [savedBlogs, setSavedBlogs] = useState<BlogProps[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [publishedBlogs, setPublishedBlogs] = useState<BlogProps[]>([]);
+  const [draftedBlogs, setDraftedBlogs] = useState<BlogProps[]>([]);
   const [likedPage, setLikedPage] = useState(1);
   const [savedPage, setSavedPage] = useState(1);
+  const [publishedPage, setPublishedPage] = useState(1);
+  const [draftedPage, setDraftedPage] = useState(1);
   const [profileIMG, setProfileIMG] = useState<string | ArrayBuffer | null>("");
   const [editComponent, setEditComponent] = useState<ReactNode>(<></>);
   const [userData, setUserData] = useState<BasicUserInfo>({
@@ -58,6 +67,18 @@ export default function Profile() {
     followers: [],
     following: [],
   });
+
+  const [innerWidth, setInnerWidth] = useState(0);
+  useEffect(() => {
+    setInnerWidth(window.innerWidth);
+    const handleResize = () => {
+      setInnerWidth(window.innerWidth);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const cancelTokenSource = axios.CancelToken.source();
   useEffect(() => {
@@ -78,7 +99,7 @@ export default function Profile() {
           setLoading(false);
         }
       } catch (error) {
-        throw new Error("axios service error");
+        router.push("/dashboard");
       }
     };
     fetchData();
@@ -153,6 +174,76 @@ export default function Profile() {
     fetchData();
     return () => cancelTokenSource.cancel("Component unmounted");
   }, [session, savedPage]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let blogResponse = null;
+        setLoading(true);
+        if (session && profileURL) {
+          if (remainCountPublished >= 1) {
+            blogResponse = await axios.get(
+              `${profileURL}?blogs=true&page=${publishedPage}`,
+            );
+            const blogData = blogResponse?.data?.data;
+            setRemainCountPublished(blogData?.remain_count_published_blogs);
+            setPublishedBlogs((prevData) => {
+              const lastPrevDataId = prevData?.[prevData.length - 1]?._id;
+              const lastResponseId =
+                blogData?.publishedBlogs?.[blogData?.publishedBlogs.length - 1]
+                  ?._id;
+              if (!prevData || prevData.length === 0) {
+                return [...(blogData?.publishedBlogs || [])];
+              } else if (lastPrevDataId !== lastResponseId) {
+                return [...prevData, ...(blogData?.publishedBlogs || [])];
+              }
+              return [...prevData];
+            });
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        throw new Error("axios service error");
+      }
+    };
+    fetchData();
+    return () => cancelTokenSource.cancel("Component unmounted");
+  }, [session, publishedPage]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        let blogResponse = null;
+        setLoading(true);
+        if (session && profileURL) {
+          if (remainCountDrafted >= 1) {
+            blogResponse = await axios.get(
+              `${profileURL}?blogs=true&page=${draftedBlogs}`,
+            );
+            const blogData = blogResponse?.data?.data;
+            setRemainCountDrafted(blogData?.remain_count_drafted_blogs);
+            setDraftedBlogs((prevData) => {
+              const lastPrevDataId = prevData?.[prevData.length - 1]?._id;
+              const lastResponseId =
+                blogData?.draftedBlogs?.[blogData.draftedBlogs.length - 1]?._id;
+              if (!prevData || prevData.length === 0) {
+                return [...(blogData?.draftedBlogs || [])];
+              } else if (lastPrevDataId !== lastResponseId) {
+                return [...prevData, ...(blogData?.draftedBlogs || [])];
+              }
+              return [...prevData];
+            });
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        throw new Error("axios service error");
+      }
+    };
+    fetchData();
+    return () => cancelTokenSource.cancel("Component unmounted");
+  }, [session, draftedPage]);
+
   const handleClick = () => setIsAlert(false);
 
   const handleSubmit = async (param: string) => {
@@ -322,7 +413,7 @@ export default function Profile() {
   };
 
   return (
-    <Layout style={{ width: "60%" }} className="container mx-auto my-14">
+    <Layout className="w-3/5 p-5 container mx-auto my-14">
       {isEdit && (
         <DraggableModal
           state={isEdit}
@@ -334,193 +425,163 @@ export default function Profile() {
         />
       )}
       {isAlert && <AntAlert {...alert} />}
-      <Row className="mb-5 mt-5">
-        <Col
-          style={{ width: "600px" }}
-          className="flex-col rounded-tr-3xl"
-          span={5}
-        >
-          <IMG
-            className="rounded-tr-3xl"
-            src={userData?.image}
-            alt="profile-image"
-          />
-          <Content
-            onClick={() => editTool("image")}
-            className="flex justify-center mt-1 bg-white"
-          >
-            <Tooltip title="Edit profile image">
-              <Image
-                className="w-5 h-5 flex-shrink-0 cursor-pointer"
-                src={edit}
-                alt="edit"
-              />
-            </Tooltip>
-          </Content>
-        </Col>
-        <Col span={1}></Col>
-        <Col className=" d-flex flex-row" span={18}>
-          <Content className="flex">
-            <Typography.Text className="text-xl">
-              Hi there,I&apos;m {userData?.name}
-            </Typography.Text>
-            <Content onClick={() => editTool("name")}>
-              <Tooltip title="Edit name">
-                <Image
-                  className="w-5 h-5 flex-shrink-0 cursor-pointer mt-1 ml-5"
-                  src={edit}
-                  alt="edit"
-                />
-              </Tooltip>
-            </Content>
-          </Content>
-          <br />
-          <Content className="flex">
-            <Typography.Title level={2}>
-              {userData?.bio ? userData?.bio : "NA"}
-            </Typography.Title>
-            <Content onClick={() => editTool("bio")}>
-              <Tooltip title="Edit biography">
-                <Image
-                  className="w-5 h-5 flex-shrink-0 cursor-pointer mt-3 ml-5"
-                  src={edit}
-                  alt="edit"
-                />
-              </Tooltip>
-            </Content>
-          </Content>
-          <Content className="flex items-center mb-2">
-            <Tooltip title="Address">
-              <Image
-                className="w-5 h-5 flex-shrink-0 cursor-pointer"
-                src={locationIcon}
-                alt="locationIcon"
-              />
-            </Tooltip>
-            <Typography className="overflow-hidden whitespace-nowrap ml-3">
-              {userData?.address ? userData?.address : "NA"}
-            </Typography>
-            <Content onClick={() => editTool("address")}>
-              <Tooltip title="Edit address">
-                <Image
-                  className="w-5 h-5 flex-shrink-0 cursor-pointer ml-5"
-                  src={edit}
-                  alt="edit"
-                />
-              </Tooltip>
-            </Content>
-          </Content>
-          <Content className="flex items-center mb-2">
-            <Tooltip title="Following">
-              <Image
-                className="w-5 h-5  flex-shrink-0"
-                src={forward}
-                alt="following"
-              />
-            </Tooltip>
-            <Typography className=" w-40 overflow-hidden whitespace-nowrap ml-3">
-              {userData?.following?.length ? userData?.following?.length : 0}
-            </Typography>
-          </Content>
-          <Content className="flex items-center mb-2">
-            <Tooltip title="Followers">
-              <Image
-                className="w-5 h-5  flex-shrink-0"
-                src={backward}
-                alt="followback"
-              />
-            </Tooltip>
-            <Typography className=" w-40 overflow-hidden whitespace-nowrap ml-3">
-              {userData?.followers?.length ? userData?.followers?.length : 0}
-            </Typography>
-          </Content>
-        </Col>
-      </Row>
-      <Row className="mt-5" gutter={[2, 2]}>
-        <Col
-          style={{ backgroundColor: "#FFB300" }}
-          className="border-2 border-slate-800  text-center"
-          span={24}
-        >
-          <Button
-            className="w-full flex items-center justify-center"
-            type="text"
-          >
-            <Image
-              className="w-5 h-5 mr-1 flex-shrink-0"
-              src={chatIcon}
-              alt="locationIcon"
-            />
-            Chat
-          </Button>
-        </Col>
-      </Row>
-      <Typography.Title level={3} className="mt-16">
-        Followers
-      </Typography.Title>
-      <Row className="mt-5">
-        <Col className="border 2 border-slate-950" span={11}>
-          <Typography.Title className="ml-5 mt-5" level={3}>
-            Following
-          </Typography.Title>
-
-          <List
-            itemLayout="horizontal"
-            dataSource={following}
-            renderItem={(item, index) => (
-              <List.Item key={index}>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar
-                      src={item?.image && item?.image}
-                      icon={!item?.image && <UserOutlined />}
-                    />
-                  }
-                  title={item?.name}
-                  description={item?.bio ? item?.bio : "No Bio Available"}
-                />
-              </List.Item>
-            )}
-          />
-          {/* <List.Item>
-            <Button
-              className="my-3"
-              style={{
-                width: "90%",
-                border: "1px solid black",
-                backgroundColor: "#F5F5F5",
-              }}
-              type="text"
+      {loading ? (
+        <div className="mt-16">
+          <AntSpin size="large" />
+        </div>
+      ) : (
+        <>
+          <Row className="mb-5 mt-5">
+            <Col
+              style={{ width: "600px" }}
+              className="flex-col rounded-tr-3xl"
+              span={5}
             >
-              Show Full List
-            </Button>
-          </List.Item> */}
-        </Col>
-        <Col span={2}></Col>
-        <Col className="border 2 border-slate-950" span={11}>
-          <Typography.Title className="ml-5 mt-5" level={3}>
+              <IMG
+                className="rounded-tr-3xl"
+                src={userData?.image}
+                alt="profile-image"
+              />
+              <Content
+                onClick={() => editTool("image")}
+                className="flex justify-center mt-1"
+              >
+                <Tooltip title="Edit profile image">
+                  <EditOutlined style={{ fontSize: "20px" }} />
+                </Tooltip>
+              </Content>
+            </Col>
+            <Col span={1}></Col>
+            <Col className=" d-flex flex-row" span={18}>
+              <Content className="flex">
+                <Typography.Text className="text-xl">
+                  Hi there,I&apos;m {userData?.name}
+                </Typography.Text>
+                <Content onClick={() => editTool("name")}>
+                  <Tooltip title="Edit name">
+                    <EditOutlined
+                      style={{ marginLeft: "10px", fontSize: "20px" }}
+                    />
+                  </Tooltip>
+                </Content>
+              </Content>
+              <br />
+              <Content className="flex">
+                <Typography.Title level={2}>
+                  {userData?.bio ? userData?.bio : "NA"}
+                </Typography.Title>
+                <Content onClick={() => editTool("bio")}>
+                  <Tooltip title="Edit biography">
+                    <EditOutlined
+                      style={{
+                        marginTop: "15px",
+                        marginLeft: "10px",
+                        fontSize: "20px",
+                      }}
+                    />
+                  </Tooltip>
+                </Content>
+              </Content>
+              <Content className="flex items-center mb-2">
+                <Tooltip title="Address">
+                  <Image
+                    className="w-5 h-5 flex-shrink-0 cursor-pointer"
+                    src={locationIcon}
+                    alt="locationIcon"
+                  />
+                </Tooltip>
+                <Typography className="overflow-hidden whitespace-nowrap ml-3">
+                  {userData?.address ? userData?.address : "NA"}
+                </Typography>
+                <Content onClick={() => editTool("address")}>
+                  <Tooltip title="Edit address">
+                    <EditOutlined
+                      style={{ marginLeft: "10px", fontSize: "20px" }}
+                    />
+                  </Tooltip>
+                </Content>
+              </Content>
+              <Content className="flex items-center mb-2">
+                <Tooltip title="Following">
+                  <Image
+                    className="w-5 h-5  flex-shrink-0"
+                    src={forward}
+                    alt="following"
+                  />
+                </Tooltip>
+                <Typography className=" w-40 overflow-hidden whitespace-nowrap ml-3">
+                  {userData?.following?.length
+                    ? userData?.following?.length
+                    : 0}
+                </Typography>
+              </Content>
+              <Content className="flex items-center mb-2">
+                <Tooltip title="Followers">
+                  <Image
+                    className="w-5 h-5  flex-shrink-0"
+                    src={backward}
+                    alt="followback"
+                  />
+                </Tooltip>
+                <Typography className=" w-40 overflow-hidden whitespace-nowrap ml-3">
+                  {userData?.followers?.length
+                    ? userData?.followers?.length
+                    : 0}
+                </Typography>
+              </Content>
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              style={{ backgroundColor: "#FFB300" }}
+              className="flex justify-center border-2 border-slate-800  text-center"
+              span={24}
+            >
+              <Button
+                className="w-full flex items-center justify-center"
+                type="text"
+              >
+                <WechatOutlined style={{ fontSize: "20px" }} />
+                Chat
+              </Button>
+            </Col>
+          </Row>
+          <Typography.Title
+            level={3}
+            className={`mt-16 ${innerWidth < 680 && "text-center"}`}
+          >
             Followers
           </Typography.Title>
+          <Row className="mt-5">
+            <Col
+              className="border p-5 border-slate-950"
+              span={innerWidth < 680 ? 22 : 11}
+            >
+              <Typography.Title className="ml-5 mt-5" level={3}>
+                Following
+              </Typography.Title>
 
-          <List
-            itemLayout="horizontal"
-            dataSource={followers}
-            renderItem={(item, index) => (
-              <List.Item key={index}>
-                <List.Item.Meta
-                  avatar={
-                    <Avatar
-                      src={item?.image && item?.image}
-                      icon={!item?.image && <UserOutlined />}
+              <List
+                itemLayout="horizontal"
+                dataSource={following}
+                renderItem={(item, index) => (
+                  <List.Item key={index}>
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar
+                          src={item?.image && item?.image}
+                          icon={!item?.image && <UserOutlined />}
+                        />
+                      }
+                      title={
+                        <Link href={`/profile/${item?._id}`}>{item?.name}</Link>
+                      }
+                      description={item?.bio ? item?.bio : "No Bio Available"}
                     />
-                  }
-                  title={<a href="https://ant.design">{item?.name}</a>}
-                  description={item?.bio ? item?.bio : "No Bio Available"}
-                />
-              </List.Item>
-            )}
-          />
-          {/* <List.Item>
+                  </List.Item>
+                )}
+              />
+              {/* <List.Item>
             <Button
               className="my-3"
               style={{
@@ -533,43 +594,39 @@ export default function Profile() {
               Show Full List
             </Button>
           </List.Item> */}
-        </Col>
-      </Row>
-      <Row>
-        <Col className="my-8" span={24}>
-          <Typography.Title level={3}>Blogs activity</Typography.Title>
-        </Col>
-      </Row>
-      <Row>
-        <Col className="border 2 border-slate-950" span={11}>
-          <Typography.Title className="ml-5 mt-5" level={3}>
-            Liked Blogs
-          </Typography.Title>
-          <List
-            itemLayout="horizontal"
-            dataSource={likedBlogs}
-            renderItem={(item, index) => {
-              const htmlContent =
-                item?.content.length > 130
-                  ? `${item?.content.slice(0, 130)}...`
-                  : `${item?.content}...`;
-              return (
-                <List.Item key={index}>
-                  <List.Item.Meta
-                    avatar={<Avatar src={item?.bannerImg} />}
-                    title={item?.heading}
-                    description={
-                      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-                    }
-                  />
-                </List.Item>
-              );
-            }}
-          />
-
-          <List.Item>
+            </Col>
+            <Col span={2}></Col>
+            <Col
+              className={`border p-5 border-slate-950 ${
+                innerWidth < 680 && "mt-5"
+              }`}
+              span={innerWidth < 680 ? 22 : 11}
+            >
+              <Typography.Title className={`ml-5 mt-5`} level={3}>
+                Followers
+              </Typography.Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={followers}
+                renderItem={(item, index) => (
+                  <List.Item key={index}>
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar
+                          src={item?.image && item?.image}
+                          icon={!item?.image && <UserOutlined />}
+                        />
+                      }
+                      title={
+                        <Link href={`/profile/${item?._id}`}>{item?.name}</Link>
+                      }
+                      description={item?.bio ? item?.bio : "No Bio Available"}
+                    />
+                  </List.Item>
+                )}
+              />
+              {/* <List.Item>
             <Button
-              onClick={() => setLikedPage(likedPage + 1)}
               className="my-3"
               style={{
                 width: "90%",
@@ -580,55 +637,324 @@ export default function Profile() {
             >
               Show Full List
             </Button>
-          </List.Item>
-          {loading && <AntSpin />}
-        </Col>
-        <Col span={2}></Col>
-        <Col className="border 5 border-slate-950" span={11}>
-          <Content className="d-flex">
-            <Typography.Title className="ml-5 mt-5" level={3}>
-              Saved Blogs{" "}
-            </Typography.Title>
-          </Content>
-
-          <List
-            itemLayout="horizontal"
-            dataSource={savedBlogs}
-            renderItem={(item, index) => {
-              const htmlContent =
-                item?.content.length > 130
-                  ? `${item?.content.slice(0, 130)}...`
-                  : `${item?.content}...`;
-              return (
-                <List.Item key={index}>
-                  <List.Item.Meta
-                    avatar={<Avatar src={item?.bannerImg} />}
-                    title={item?.heading}
-                    description={
-                      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-                    }
-                  />
-                </List.Item>
-              );
-            }}
-          />
-          <List.Item>
-            <Button
-              onClick={() => setSavedPage(savedPage + 1)}
-              className="my-3"
-              style={{
-                width: "90%",
-                border: "1px solid black",
-                backgroundColor: "#F5F5F5",
-              }}
-              type="text"
+          </List.Item> */}
+            </Col>
+          </Row>
+          <Row>
+            <Col className="my-8" span={24}>
+              <Typography.Title
+                className={`${innerWidth < 680 && "text-center"}`}
+                level={3}
+              >
+                Blogs activity
+              </Typography.Title>
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              className="border 2 border-slate-950"
+              span={innerWidth < 680 ? 22 : 11}
             >
-              Show Full List
-            </Button>
-          </List.Item>
-          {loading && <AntSpin />}
-        </Col>
-      </Row>
+              <Typography.Title className="ml-5 mt-5" level={3}>
+                Liked Blogs
+              </Typography.Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={likedBlogs}
+                renderItem={(item, index) => {
+                  const htmlContent =
+                    item?.content.length > 130
+                      ? `${item?.content.slice(0, 130)}...`
+                      : `${item?.content}...`;
+                  return (
+                    <>
+                      <List.Item key={index}>
+                        <List.Item.Meta
+                          avatar={<Avatar src={item?.bannerImg} />}
+                          title={`${item?.heading}`}
+                          description={
+                            <Link
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                              href={`blog/${item?._id}`}
+                            >
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: htmlContent,
+                                }}
+                              />
+                            </Link>
+                          }
+                        />
+                      </List.Item>
+                    </>
+                  );
+                }}
+              />
+              {likedBlogs?.length > 0 && (
+                <List.Item>
+                  <Button
+                    onClick={() => setLikedPage(likedPage + 1)}
+                    className="my-3"
+                    style={{
+                      width: "90%",
+                      border: "1px solid black",
+                      backgroundColor: "#F5F5F5",
+                    }}
+                    type="text"
+                  >
+                    Show Full List
+                  </Button>
+                </List.Item>
+              )}
+              {loading && <AntSpin />}
+            </Col>
+            <Col span={2}></Col>
+            <Col
+              className={`border 5 border-slate-950 ${
+                innerWidth < 680 && "mt-5"
+              }`}
+              span={innerWidth < 680 ? 22 : 11}
+            >
+              <Content className="d-flex">
+                <Typography.Title className="ml-5 mt-5" level={3}>
+                  Saved Blogs{" "}
+                </Typography.Title>
+              </Content>
+              <List
+                itemLayout="horizontal"
+                dataSource={savedBlogs}
+                renderItem={(item, index) => {
+                  const htmlContent =
+                    item?.content.length > 130
+                      ? `${item?.content.slice(0, 130)}...`
+                      : `${item?.content}...`;
+                  return (
+                    <>
+                      <List.Item key={index}>
+                        <List.Item.Meta
+                          avatar={<Avatar src={item?.bannerImg} />}
+                          title={`${item?.heading}`}
+                          description={
+                            <Link
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                              href={`blog/${item?._id}`}
+                            >
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: htmlContent,
+                                }}
+                              />
+                            </Link>
+                          }
+                        />
+                      </List.Item>
+                    </>
+                  );
+                }}
+              />
+              {savedBlogs?.length > 0 && (
+                <List.Item>
+                  <Button
+                    onClick={() => setSavedPage(savedPage + 1)}
+                    className="my-3"
+                    style={{
+                      width: "90%",
+                      border: "1px solid black",
+                      backgroundColor: "#F5F5F5",
+                    }}
+                    type="text"
+                  >
+                    Show Full List
+                  </Button>
+                </List.Item>
+              )}
+              {loading && <AntSpin />}
+            </Col>
+          </Row>
+          <Row>
+            <Col className="my-8" span={24}>
+              <Typography.Title
+                level={3}
+                className={`${innerWidth < 680 && "text-center"}`}
+              >
+                Blogs
+              </Typography.Title>
+            </Col>
+          </Row>
+          <Row>
+            <Col
+              className="border 2 border-slate-950"
+              span={innerWidth < 680 ? 22 : 11}
+            >
+              <Typography.Title className="ml-5 mt-5" level={3}>
+                Published Blogs
+              </Typography.Title>
+              <List
+                itemLayout="horizontal"
+                dataSource={publishedBlogs}
+                renderItem={(item, index) => {
+                  const htmlContent =
+                    item?.content.length > 130
+                      ? `${item?.content.slice(0, 130)}...`
+                      : `${item?.content}...`;
+                  return (
+                    <>
+                      <List.Item key={index}>
+                        <List.Item.Meta
+                          avatar={<Avatar src={item?.bannerImg} />}
+                          title={`${item?.heading}`}
+                          description={
+                            <Link
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                              href={`blog/${item?._id}`}
+                            >
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: htmlContent,
+                                }}
+                              />
+                              <div className="pr-5 block text-right text-blue-500">
+                                <Tooltip title="Edit this text data">
+                                  <Link
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "inherit",
+                                    }}
+                                    href={`blog/${item?._id}/edit`}
+                                  >
+                                    <EditOutlined
+                                      style={{
+                                        fontSize: "15px",
+                                        marginRight: "10px",
+                                      }}
+                                    />
+                                    Edit Blog
+                                  </Link>
+                                </Tooltip>
+                              </div>
+                            </Link>
+                          }
+                        />
+                      </List.Item>
+                    </>
+                  );
+                }}
+              />
+
+              {publishedBlogs?.length > 0 && (
+                <List.Item>
+                  <Button
+                    onClick={() => setPublishedPage(publishedPage + 1)}
+                    className="my-3"
+                    style={{
+                      width: "90%",
+                      border: "1px solid black",
+                      backgroundColor: "#F5F5F5",
+                    }}
+                    type="text"
+                  >
+                    Show Full List
+                  </Button>
+                </List.Item>
+              )}
+              {loading && <AntSpin />}
+            </Col>
+            <Col span={2}></Col>
+            <Col
+              className={`border 5 border-slate-950 ${
+                innerWidth < 680 && "mt-5"
+              }`}
+              span={innerWidth < 680 ? 22 : 11}
+            >
+              <Content className="d-flex">
+                <Typography.Title className={`ml-5 mt-5`} level={3}>
+                  Drafted Blogs{" "}
+                </Typography.Title>
+              </Content>
+              <List
+                itemLayout="horizontal"
+                dataSource={draftedBlogs}
+                renderItem={(item, index) => {
+                  const htmlContent =
+                    item?.content.length > 130
+                      ? `${item?.content.slice(0, 130)}...`
+                      : `${item?.content}...`;
+                  return (
+                    <>
+                      <List.Item key={index}>
+                        <List.Item.Meta
+                          avatar={<Avatar src={item?.bannerImg} />}
+                          title={`${item?.heading}`}
+                          description={
+                            <Link
+                              style={{
+                                textDecoration: "none",
+                                color: "inherit",
+                              }}
+                              href={`blog/${item?._id}`}
+                            >
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: htmlContent,
+                                }}
+                              />
+                              <div className="pr-5 block text-right text-blue-500">
+                                <Tooltip title="Edit this text data">
+                                  <Link
+                                    style={{
+                                      textDecoration: "none",
+                                      color: "inherit",
+                                    }}
+                                    href={`blog/${item?._id}/edit`}
+                                  >
+                                    <EditOutlined
+                                      style={{
+                                        fontSize: "15px",
+                                        marginRight: "10px",
+                                      }}
+                                    />
+                                    Edit Blog
+                                  </Link>
+                                </Tooltip>
+                              </div>
+                            </Link>
+                          }
+                        />
+                      </List.Item>
+                    </>
+                  );
+                }}
+              />
+              {draftedBlogs?.length > 0 && (
+                <List.Item>
+                  <Button
+                    onClick={() => setDraftedPage(draftedPage + 1)}
+                    className="my-3"
+                    style={{
+                      width: "90%",
+                      border: "1px solid black",
+                      backgroundColor: "#F5F5F5",
+                    }}
+                    type="text"
+                  >
+                    Show Full List
+                  </Button>
+                </List.Item>
+              )}
+              {loading && <AntSpin />}
+            </Col>
+          </Row>
+        </>
+      )}
     </Layout>
   );
 }

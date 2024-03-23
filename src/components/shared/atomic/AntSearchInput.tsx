@@ -1,15 +1,13 @@
 import React from "react";
-import { Input } from "antd";
+import { Button, Input } from "antd";
 import { AntSearchInputProps } from "@/utils/types/state";
-
-const { Search } = Input;
 
 const AntSearchInput: React.FC<AntSearchInputProps> = ({
   placeholder = "Search Unsplash Images",
-  buttonName = "Search",
   size = "large",
-  isLoading = true,
   allowClear = true,
+  isButton = true,
+  value,
   handleChange,
   handleClick,
   count,
@@ -17,18 +15,25 @@ const AntSearchInput: React.FC<AntSearchInputProps> = ({
   let countObj = {};
   if (count) countObj = { show: true, max: 20 };
   return (
-    <>
-      <Search
+    <div className="flex h-8">
+      <Input
+        value={value}
         onChange={(e) => handleChange(e.target.value)}
-        onClick={handleClick}
         placeholder={placeholder}
-        enterButton={buttonName}
         size={size}
-        loading={isLoading}
         allowClear={allowClear}
         count={countObj}
       />
-    </>
+      {isButton && (
+        <Button
+          className="ml-2"
+          type="primary"
+          onClick={handleClick && handleClick}
+        >
+          Search
+        </Button>
+      )}
+    </div>
   );
 };
 

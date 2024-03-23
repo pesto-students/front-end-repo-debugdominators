@@ -37,17 +37,55 @@ export async function GET(request: NextRequest) {
       const total_count_liked = await BlogModel.countDocuments({
         likedUsers: endPath,
       });
-      const remain_count_liked = total_count_liked - (skip + per_page);
+      const remain_count_liked =
+        total_count_liked > skip + per_page
+          ? total_count_liked - (skip + per_page)
+          : 0;
       const total_count_saved = await BlogModel.countDocuments({
         savedUsers: endPath,
       });
-      const remain_count_saved = total_count_saved - (skip + per_page);
+      const remain_count_saved =
+        total_count_saved > skip + per_page
+          ? total_count_saved - (skip + per_page)
+          : 0;
+
+      const total_count_published_blogs = await BlogModel.countDocuments({
+        author: endPath,
+        isPublished: true,
+      });
+      const remain_count_published_blogs =
+        total_count_published_blogs > skip + per_page
+          ? total_count_published_blogs - (skip + per_page)
+          : 0;
+
+      const total_count_saved_blogs = await BlogModel.countDocuments({
+        author: endPath,
+        isPublished: false,
+      });
+      const remain_count_drafted_blogs =
+        total_count_saved_blogs > skip + per_page
+          ? total_count_saved_blogs - (skip + per_page)
+          : 0;
 
       const likedUsersMongo = await BlogModel.find({ likedUsers: endPath })
         .select(blogSelect)
         .skip(skip)
         .limit(per_page);
       const savedUsersMongo = await BlogModel.find({ savedUsers: endPath })
+        .select(blogSelect)
+        .skip(skip)
+        .limit(per_page);
+      const publishedBlogsMongo = await BlogModel.find({
+        author: endPath,
+        isPublished: true,
+      })
+        .select(blogSelect)
+        .skip(skip)
+        .limit(per_page);
+      const draftedBlogsMongo = await BlogModel.find({
+        author: endPath,
+        isPublished: false,
+      })
         .select(blogSelect)
         .skip(skip)
         .limit(per_page);
@@ -58,7 +96,22 @@ export async function GET(request: NextRequest) {
       const savedUsers = generateBlogPayload(
         JSON.parse(JSON.stringify(savedUsersMongo)),
       );
-      data = { likedUsers, savedUsers, remain_count_liked, remain_count_saved };
+      const publishedBlogs = generateBlogPayload(
+        JSON.parse(JSON.stringify(publishedBlogsMongo)),
+      );
+      const draftedBlogs = generateBlogPayload(
+        JSON.parse(JSON.stringify(draftedBlogsMongo)),
+      );
+      data = {
+        likedUsers,
+        savedUsers,
+        remain_count_published_blogs,
+        remain_count_drafted_blogs,
+        remain_count_liked,
+        remain_count_saved,
+        publishedBlogs,
+        draftedBlogs,
+      };
     } else {
       data = await UserModel.findById(endPath)
         .populate({

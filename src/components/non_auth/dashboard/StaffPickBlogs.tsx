@@ -6,6 +6,7 @@ import { Typography } from "antd";
 import { Col, Row } from "antd";
 import { Layout } from "antd";
 import axios from "axios";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 const { Content } = Layout;
 
@@ -50,19 +51,29 @@ const StaffPickBlogs = ({ innerWidth }: { innerWidth: number }) => {
                 <Col style={{ width: "100%" }} className=" " span={13}>
                   <Content className="mb-3 leading-4 flex-content text-left  max-h-20 ">
                     <Typography.Text className="text-xl font-bold">
-                      {blog?.heading.slice(0, 30)}
+                      <Link
+                        style={{ textDecoration: "none", color: "inherit" }}
+                        href={`${process.env.NEXT_PUBLIC_BASE_PATH}/blog/${blog?._id}`}
+                      >
+                        {blog?.heading.slice(0, 30)}
+                      </Link>
                     </Typography.Text>
                   </Content>
                   <Content className="max-h-32 mb-1 text-left">
                     <Typography className="leading-4 font-semibold text-left">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html:
-                            blog?.content.length > 120
-                              ? `${blog.content.slice(0, 120)}...`
-                              : `${blog?.content}...`,
-                        }}
-                      />
+                      <Link
+                        style={{ textDecoration: "none", color: "inherit" }}
+                        href={`${process.env.NEXT_PUBLIC_BASE_PATH}/blog/${blog?._id}`}
+                      >
+                        <div
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              blog?.content.length > 120
+                                ? `${blog.content.slice(0, 120)}...`
+                                : `${blog?.content}...`,
+                          }}
+                        />
+                      </Link>
                     </Typography>
                     <Typography className="mt-5">
                       {blog?.readingTime} min read
