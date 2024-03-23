@@ -515,7 +515,11 @@ export default function Profile() {
                 </Button>
               </Col>
             ) : (
-              <InlineWidget url={`https://calendly.com/qwer`} />
+              <InlineWidget
+                url={`https://calendly.com/${userData?.email?.split(
+                  "@",
+                )[0]}/30min`}
+              />
             )}
             <Col
               style={{ backgroundColor: "grey" }}
