@@ -153,11 +153,11 @@ const BlogDetails = () => {
   return (
     <>
       {loading ? (
-        <div className="mt-5">
+        <div className="mt-16">
           <AntSpin size="large" />
         </div>
       ) : (
-        <div className="w-3/5 mx-auto">
+        <div className="w-3/5 mx-auto mb-5">
           <h1
             style={{
               margin: "30px 0px 50px",

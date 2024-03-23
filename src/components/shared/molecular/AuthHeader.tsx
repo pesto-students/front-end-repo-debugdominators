@@ -1,5 +1,5 @@
-import { AuthHeaderProps } from "@/utils/types/header";
 import { abel, yanone } from "@/utils/helpers/fonts";
+import { AuthHeaderProps } from "@/utils/types/html";
 import React from "react";
 
 const AuthHeader = ({ header, subheader }: AuthHeaderProps) => {

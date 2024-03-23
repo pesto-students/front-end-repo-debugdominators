@@ -59,7 +59,11 @@ const Detail = ({ props }: { props: BlogDetailPorps }) => {
           style={{ margin: "10px 0px", display: "flex", justifyContent: "end" }}
         >
           <Button
-            onClick={() => deletContent && deletContent(elem && elem?._id)}
+            onClick={() => {
+              if (elem && elem._id) {
+                deletContent && deletContent(elem._id);
+              }
+            }}
             style={{ background: "red", color: "white", fontWeight: "bold" }}
           >
             Delete Data
